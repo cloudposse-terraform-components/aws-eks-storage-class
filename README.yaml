@@ -1,70 +1,163 @@
-name: "template"
-
+name: "aws-eks-storage-class"
 # Canonical GitHub repo
-github_repo: "cloudposse-terraform-components/template"
-
+github_repo: "cloudposse-terraform-components/aws-eks-storage-class"
 # Short description of this project
 description: |-
-  Description of this component
+  This component is responsible for provisioning `StorageClasses` in an EKS cluster. See the list of guides and references
+  linked at the bottom of this README for more information.
 
-usage: |-
-  **Stack Level**: Regional or Test47
+  A StorageClass provides part of the configuration for a PersistentVolumeClaim, which copies the configuration when it is
+  created. Thus, you can delete a StorageClass without affecting existing PersistentVolumeClaims, and changes to a
+  StorageClass do not propagate to existing PersistentVolumeClaims.
 
-  Here's an example snippet for how to use this component.
-  
-  ```yaml
-  components:
-    terraform:
-      foo:
-        vars:
-          enabled: true
+  ## Usage
+
+  **Stack Level**: Regional, per cluster
+
+  This component can create storage classes backed by EBS or EFS, and is intended to be used with the corresponding EKS
+  add-ons `aws-ebs-csi-driver` and `aws-efs-csi-driver` respectively. In the case of EFS, this component also requires
+  that you have provisioned an EFS filesystem in the same region as your cluster, and expects you have used the `efs`
+  (previously `eks/efs`) component to do so. The EFS storage classes will get the file system ID from the EFS component's
+  output.
+
+  ### Note: Default Storage Class
+
+  Exactly one StorageClass can be designated as the default StorageClass for a cluster. This default StorageClass is then
+  used by PersistentVolumeClaims that do not specify a storage class.
+
+  Prior to Kubernetes 1.26, if more than one StorageClass is marked as default, a PersistentVolumeClaim without
+  `storageClassName` explicitly specified cannot be created. In Kubernetes 1.26 and later, if more than one StorageClass
+  is marked as default, the last one created will be used, which means you can get by with just ignoring the default "gp2"
+  StorageClass that EKS creates for you.
+
+  EKS always creates a default storage class for the cluster, typically an EBS backed class named `gp2`. Find out what the
+  default storage class is for your cluster by running this command:
+
+  ```bash
+  # You only need to run `set-cluster` when you are changing target clusters
+  set-cluster <cluster-name> admin # replace admin with other role name if desired
+  kubectl get storageclass
   ```
 
+  This will list the available storage classes, with the default one marked with `(default)` next to its name.
+
+  If you want to change the default, you can unset the existing default manually, like this:
+
+  ```bash
+  SC_NAME=gp2 # Replace with the name of the storage class you want to unset as default
+  # You only need to run `set-cluster` when you are changing target clusters
+  set-cluster <cluster-name> admin # replace admin with other role name if desired
+  kubectl patch storageclass $SC_NAME -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+  ```
+
+  Or you can import the existing default storage class into Terraform and manage or delete it entirely, like this:
+
+  ```bash
+  SC_NAME=gp2 # Replace with the name of the storage class you want to unset as default
+  atmos terraform import eks/storage-class 'kubernetes_storage_class_v1.ebs["'${SC_NAME}'"]' $SC_NAME -s=core-usw2-dev
+  ```
+
+  View the parameters of a storage class by running this command:
+
+  ```bash
+  SC_NAME=gp2 # Replace with the name of the storage class you want to view
+  # You only need to run `set-cluster` when you are changing target clusters
+  set-cluster <cluster-name> admin # replace admin with other role name if desired
+  kubectl get storageclass $SC_NAME -o yaml
+  ```
+
+  You can then match that configuration, except that you cannot omit `allow_volume_exansion`.
+
+  ```yaml
+  ebs_storage_classes:
+    gp2:
+      make_default_storage_class: true
+      include_tags: false
+      # Preserve values originally set by eks/cluster.
+      # Set to "" to omit.
+      provisioner: kubernetes.io/aws-ebs
+      parameters:
+        type: gp2
+        encrypted: ""
+  ```
+
+  Here's an example snippet for how to use this component.
+
+  ```yaml
+  eks/storage-class:
+    vars:
+      ebs_storage_classes:
+        gp2:
+          make_default_storage_class: false
+          include_tags: false
+          # Preserve values originally set by eks/cluster.
+          # Set to "" to omit.
+          provisioner: kubernetes.io/aws-ebs
+          parameters:
+            type: gp2
+            encrypted: ""
+        gp3:
+          make_default_storage_class: true
+          parameters:
+            type: gp3
+      efs_storage_classes:
+        efs-sc:
+          make_default_storage_class: false
+          efs_component_name: "efs" # Replace with the name of the EFS component, previously "eks/efs"
+  ```
+
+  <!-- prettier-ignore-start -->
+
+  <!-- prettier-ignore-end -->
+
+  ## Related How-to Guides
+
+  - [EBS CSI Migration FAQ](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi-migration-faq.html)
+  - [Migrating Clusters From gp2 to gp3 EBS Volumes](https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/)
+  - [Kubernetes: Change the Default StorageClass](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/)
+
+  ## References
+
+  - [Kubernetes Storage Classes](https://kubernetes.io/docs/concepts/storage/storage-classes)
+  -
+  - [EBS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html)
+  - [EBS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-ebs-csi-driver#documentation)
+  - [EBS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/parameters.md)
+  - [EFS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html)
+  - [EFS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/docs/README.md#examples)
+  - [EFS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/docs#storage-class-parameters-for-dynamic-provisioning)
+  - [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/eks/cluster) -
+    Cloud Posse's upstream component
 include:
   - "docs/terraform.md"
-
 tags:
-  - terraform
-  - terraform-modules
-  - aws
-  - components
-  - terraform-components
-  - root
-  - geodesic
-  - reference-implementation
-  - reference-architecture
-
+  - component/eks
+  - layer/eks
+  - layer/data
+  - provider/aws
+  - provider/helm
 # Categories of this project
 categories:
-  - terraform-modules/root
-  - terraform-components
-
+  - component/eks
+  - layer/eks
+  - layer/data
+  - provider/aws
+  - provider/helm
 # License of this project
 license: "APACHE2"
-
 # Badges to display
 badges:
-  - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse-terraform-components/template.svg?style=for-the-badge"
-    url: "https://github.com/cloudposse-terraform-components/template/releases/latest"
-  - name: "Slack Community"
-    image: "https://slack.cloudposse.com/for-the-badge.svg"
-    url: "https://slack.cloudposse.com"
-
-references:
-  - name: "Cloud Posse Documentation"
-    description: "Complete documentation for the Cloud Posse solution"
-    url: "https://docs.cloudposse.com"
-  - name: "Reference Architectures"
-    description: "Launch effortlessly with our turnkey reference architectures, built either by your team or ours."
-    url: "https://cloudposse.com/"
-
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse-terraform-components/aws-eks-storage-class.svg?style=for-the-badge
+    url: https://github.com/cloudposse-terraform-components/aws-eks-storage-class/releases/latest
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://slack.cloudposse.com
 related:
-- name: "Cloud Posse Terraform Modules"
-  description: Our collection of reusable Terraform modules used by our reference architectures.
-  url: "https://docs.cloudposse.com/modules/"
-- name: "Atmos"
-  description: "Atmos is like docker-compose but for your infrastructure"
-  url: "https://atmos.tools"
-
+  - name: "Cloud Posse Terraform Modules"
+    description: Our collection of reusable Terraform modules used by our reference architectures.
+    url: "https://docs.cloudposse.com/modules/"
+  - name: "Atmos"
+    description: "Atmos is like docker-compose but for your infrastructure"
+    url: "https://atmos.tools"
 contributors: [] # If included generates contribs

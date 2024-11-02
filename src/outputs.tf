@@ -1,4 +1,4 @@
-output "mock" {
-  description = "Mock output example for the Cloud Posse Terraform component template"
-  value       = local.enabled ? "hello ${basename(abspath(path.module))}" : ""
+output "storage_classes" {
+  value       = merge(kubernetes_storage_class_v1.ebs, kubernetes_storage_class_v1.efs)
+  description = "Storage classes created by this module"
 }
