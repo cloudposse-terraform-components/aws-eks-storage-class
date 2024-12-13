@@ -7,7 +7,7 @@ tags:
   - provider/helm
 ---
 
-# Component: `eks`
+# Component: `eks-storage-class`
 
 This component is responsible for provisioning `StorageClasses` in an EKS cluster. See the list of guides and references
 linked at the bottom of this README for more information.
