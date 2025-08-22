@@ -15,7 +15,6 @@ linked at the bottom of this README for more information.
 A StorageClass provides part of the configuration for a PersistentVolumeClaim, which copies the configuration when it is
 created. Thus, you can delete a StorageClass without affecting existing PersistentVolumeClaims, and changes to a
 StorageClass do not propagate to existing PersistentVolumeClaims.
-
 ## Usage
 
 **Stack Level**: Regional, per cluster
@@ -113,7 +112,10 @@ eks/storage-class:
 ```
 
 <!-- prettier-ignore-start -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- prettier-ignore-end -->
+
+
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -191,26 +193,37 @@ eks/storage-class:
 | Name | Description |
 |------|-------------|
 | <a name="output_storage_classes"></a> [storage\_classes](#output\_storage\_classes) | Storage classes created by this module |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-<!-- prettier-ignore-end -->
+<!-- markdownlint-restore -->
 
-## Related How-to Guides
 
-- [EBS CSI Migration FAQ](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi-migration-faq.html)
-- [Migrating Clusters From gp2 to gp3 EBS Volumes](https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/)
-- [Kubernetes: Change the Default StorageClass](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/)
 
 ## References
 
-- [Kubernetes Storage Classes](https://kubernetes.io/docs/concepts/storage/storage-classes)
--
-- [EBS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html)
-- [EBS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-ebs-csi-driver#documentation)
-- [EBS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/parameters.md)
-- [EFS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html)
-- [EFS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/docs/README.md#examples)
-- [EFS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/docs#storage-class-parameters-for-dynamic-provisioning)
-- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/eks/cluster) -
-  Cloud Posse's upstream component
+
+- [EBS CSI Migration FAQ](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi-migration-faq.html) - 
+
+- [Migrating Clusters From gp2 to gp3 EBS Volumes](https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/) - 
+
+- [Kubernetes: Change the Default StorageClass](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/) - 
+
+- [Kubernetes Storage Classes](https://kubernetes.io/docs/concepts/storage/storage-classes) - 
+
+- [EBS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html) - 
+
+- [EBS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-ebs-csi-driver#documentation) - 
+
+- [EBS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/parameters.md) - 
+
+- [EFS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html) - 
+
+- [EFS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/docs/README.md#examples) - 
+
+- [EFS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/docs#storage-class-parameters-for-dynamic-provisioning) - 
+
+- [cloudposse-terraform-components](https://github.com/orgs/cloudposse-terraform-components/repositories) - Cloud Posse's upstream component
+
+
+
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse-terraform-components/aws-eks-storage-class&utm_content=)
+
