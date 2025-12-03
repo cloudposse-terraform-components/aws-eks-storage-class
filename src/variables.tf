@@ -74,6 +74,8 @@ variable "efs_storage_classes" {
       provisioningMode = optional(string, "efs-ap")
       gidRangeStart    = optional(string, null)
       gidRangeEnd      = optional(string, null)
+      uid              = optional(string, null)
+      gid              = optional(string, null)
       # Support for cross-account EFS mounts
       # See https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/examples/kubernetes/cross_account_mount
       # and for gritty details on secrets: https://kubernetes-csi.github.io/docs/secrets-and-credentials-storage-class.html
