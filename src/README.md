@@ -15,6 +15,7 @@ linked at the bottom of this README for more information.
 A StorageClass provides part of the configuration for a PersistentVolumeClaim, which copies the configuration when it is
 created. Thus, you can delete a StorageClass without affecting existing PersistentVolumeClaims, and changes to a
 StorageClass do not propagate to existing PersistentVolumeClaims.
+
 ## Usage
 
 **Stack Level**: Regional, per cluster
@@ -112,10 +113,7 @@ eks/storage-class:
 ```
 
 <!-- prettier-ignore-start -->
-<!-- prettier-ignore-end -->
-
-
-<!-- markdownlint-disable -->
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -159,7 +157,7 @@ eks/storage-class:
 | <a name="input_delimiter"></a> [delimiter](#input\_delimiter) | Delimiter to be used between ID elements.<br/>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
 | <a name="input_descriptor_formats"></a> [descriptor\_formats](#input\_descriptor\_formats) | Describe additional descriptors to be output in the `descriptors` output map.<br/>Map of maps. Keys are names of descriptors. Values are maps of the form<br/>`{<br/>  format = string<br/>  labels = list(string)<br/>}`<br/>(Type is `any` so the map values can later be enhanced to provide additional options.)<br/>`format` is a Terraform format string to be passed to the `format()` function.<br/>`labels` is a list of labels, in order, to pass to `format()` function.<br/>Label values will be normalized before being passed to `format()` so they will be<br/>identical to how they appear in `id`.<br/>Default is `{}` (`descriptors` output will be empty). | `any` | `{}` | no |
 | <a name="input_ebs_storage_classes"></a> [ebs\_storage\_classes](#input\_ebs\_storage\_classes) | A map of storage class name to EBS parameters to create | <pre>map(object({<br/>    enabled                    = optional(bool, true)<br/>    make_default_storage_class = optional(bool, false)<br/>    include_tags               = optional(bool, true) # If true, StorageClass will set our tags on created EBS volumes<br/>    labels                     = optional(map(string), null)<br/>    reclaim_policy             = optional(string, "Delete")<br/>    volume_binding_mode        = optional(string, "WaitForFirstConsumer")<br/>    mount_options              = optional(list(string), null)<br/>    # Allowed topologies are poorly documented, and poorly implemented.<br/>    # According to the API spec https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#storageclass-v1-storage-k8s-io<br/>    # it should be a list of objects with a `matchLabelExpressions` key, which is a list of objects with `key` and `values` keys.<br/>    # However, the Terraform resource only allows a single object in a matchLabelExpressions block, not a list,<br/>    # the EBS driver appears to only allow a single matchLabelExpressions block, and it is entirely unclear<br/>    # what should happen if either of the lists has more than one element.<br/>    # So we simplify it here to be singletons, not lists, and allow for a future change to the resource to support lists,<br/>    # and a future replacement for this flattened object which can maintain backward compatibility.<br/>    allowed_topologies_match_label_expressions = optional(object({<br/>      key    = optional(string, "topology.ebs.csi.aws.com/zone")<br/>      values = list(string)<br/>    }), null)<br/>    allow_volume_expansion = optional(bool, true)<br/>    # parameters, see https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/parameters.md<br/>    parameters = object({<br/>      fstype                     = optional(string, "ext4") # "csi.storage.k8s.io/fstype"<br/>      type                       = optional(string, "gp3")<br/>      iopsPerGB                  = optional(string, null)<br/>      allowAutoIOPSPerGBIncrease = optional(string, null) # "true" or "false"<br/>      iops                       = optional(string, null)<br/>      throughput                 = optional(string, null)<br/><br/>      encrypted    = optional(string, "true")<br/>      kmsKeyId     = optional(string, null) # ARN of the KMS key to use for encryption. If not specified, the default key is used.<br/>      blockExpress = optional(string, null) # "true" or "false"<br/>      blockSize    = optional(string, null)<br/>    })<br/>    provisioner = optional(string, "ebs.csi.aws.com")<br/><br/>    # TODO: support tags<br/>    # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/tagging.md<br/>  }))</pre> | `{}` | no |
-| <a name="input_efs_storage_classes"></a> [efs\_storage\_classes](#input\_efs\_storage\_classes) | A map of storage class name to EFS parameters to create | <pre>map(object({<br/>    enabled                    = optional(bool, true)<br/>    make_default_storage_class = optional(bool, false)<br/>    labels                     = optional(map(string), null)<br/>    efs_component_name         = optional(string, "eks/efs")<br/>    reclaim_policy             = optional(string, "Delete")<br/>    volume_binding_mode        = optional(string, "Immediate")<br/>    # Mount options are poorly documented.<br/>    # TLS is now the default and need not be specified. https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/docs#encryption-in-transit<br/>    # Other options include `lookupcache` and `iam`.<br/>    mount_options = optional(list(string), null)<br/>    parameters = optional(object({<br/>      basePath         = optional(string, "/efs_controller")<br/>      directoryPerms   = optional(string, "700")<br/>      provisioningMode = optional(string, "efs-ap")<br/>      gidRangeStart    = optional(string, null)<br/>      gidRangeEnd      = optional(string, null)<br/>      uid              = optional(string, null)<br/>      gid              = optional(string, null)<br/>      # Support for cross-account EFS mounts<br/>      # See https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/examples/kubernetes/cross_account_mount<br/>      # and for gritty details on secrets: https://kubernetes-csi.github.io/docs/secrets-and-credentials-storage-class.html<br/>      az                           = optional(string, null)<br/>      provisioner-secret-name      = optional(string, null) # "csi.storage.k8s.io/provisioner-secret-name"<br/>      provisioner-secret-namespace = optional(string, null) # "csi.storage.k8s.io/provisioner-secret-namespace"<br/>    }), {})<br/>    provisioner = optional(string, "efs.csi.aws.com")<br/>  }))</pre> | `{}` | no |
+| <a name="input_efs_storage_classes"></a> [efs\_storage\_classes](#input\_efs\_storage\_classes) | A map of storage class name to EFS parameters to create | <pre>map(object({<br/>    enabled                    = optional(bool, true)<br/>    make_default_storage_class = optional(bool, false)<br/>    labels                     = optional(map(string), null)<br/>    efs_component_name         = optional(string, "eks/efs")<br/>    reclaim_policy             = optional(string, "Delete")<br/>    volume_binding_mode        = optional(string, "Immediate")<br/>    # Mount options are poorly documented.<br/>    # TLS is now the default and need not be specified. https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/docs#encryption-in-transit<br/>    # Other options include `lookupcache` and `iam`.<br/>    mount_options = optional(list(string), null)<br/>    parameters = optional(object({<br/>      basePath         = optional(string, "/efs_controller")<br/>      directoryPerms   = optional(string, "700")<br/>      provisioningMode = optional(string, "efs-ap")<br/>      gidRangeStart    = optional(string, null)<br/>      gidRangeEnd      = optional(string, null)<br/>      # Support for cross-account EFS mounts<br/>      # See https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/examples/kubernetes/cross_account_mount<br/>      # and for gritty details on secrets: https://kubernetes-csi.github.io/docs/secrets-and-credentials-storage-class.html<br/>      az                           = optional(string, null)<br/>      provisioner-secret-name      = optional(string, null) # "csi.storage.k8s.io/provisioner-secret-name"<br/>      provisioner-secret-namespace = optional(string, null) # "csi.storage.k8s.io/provisioner-secret-namespace"<br/>    }), {})<br/>    provisioner = optional(string, "efs.csi.aws.com")<br/>  }))</pre> | `{}` | no |
 | <a name="input_eks_component_name"></a> [eks\_component\_name](#input\_eks\_component\_name) | The name of the EKS component for the cluster in which to create the storage classes | `string` | `"eks/cluster"` | no |
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Set to false to prevent the module from creating any resources | `bool` | `null` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | ID element. Usually used for region e.g. 'uw2', 'us-west-2', OR role 'prod', 'staging', 'dev', 'UAT' | `string` | `null` | no |
@@ -193,37 +191,26 @@ eks/storage-class:
 | Name | Description |
 |------|-------------|
 | <a name="output_storage_classes"></a> [storage\_classes](#output\_storage\_classes) | Storage classes created by this module |
-<!-- markdownlint-restore -->
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- prettier-ignore-end -->
 
+## Related How-to Guides
 
+- [EBS CSI Migration FAQ](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi-migration-faq.html)
+- [Migrating Clusters From gp2 to gp3 EBS Volumes](https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/)
+- [Kubernetes: Change the Default StorageClass](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/)
 
 ## References
 
-
-- [EBS CSI Migration FAQ](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi-migration-faq.html) - 
-
-- [Migrating Clusters From gp2 to gp3 EBS Volumes](https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/) - 
-
-- [Kubernetes: Change the Default StorageClass](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/) - 
-
-- [Kubernetes Storage Classes](https://kubernetes.io/docs/concepts/storage/storage-classes) - 
-
-- [EBS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html) - 
-
-- [EBS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-ebs-csi-driver#documentation) - 
-
-- [EBS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/parameters.md) - 
-
-- [EFS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html) - 
-
-- [EFS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/docs/README.md#examples) - 
-
-- [EFS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/docs#storage-class-parameters-for-dynamic-provisioning) - 
-
-- [cloudposse-terraform-components](https://github.com/orgs/cloudposse-terraform-components/repositories) - Cloud Posse's upstream component
-
-
-
+- [Kubernetes Storage Classes](https://kubernetes.io/docs/concepts/storage/storage-classes)
+-
+- [EBS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html)
+- [EBS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-ebs-csi-driver#documentation)
+- [EBS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/parameters.md)
+- [EFS CSI driver (Amazon)](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html)
+- [EFS CSI driver (GitHub)](https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/docs/README.md#examples)
+- [EFS CSI StorageClass Parameters](https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/master/docs#storage-class-parameters-for-dynamic-provisioning)
+- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/eks/cluster) -
+  Cloud Posse's upstream component
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse-terraform-components/aws-eks-storage-class&utm_content=)
-
